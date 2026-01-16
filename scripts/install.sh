@@ -1,15 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
-# Antigravity Sync - Installation Script
+# SkillSync - Installation Script
 # Builds and installs the daemon as a launchd service
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-BINARY_NAME="antigravity"
-PLIST_NAME="com.antigravity.sync.plist"
+BINARY_NAME="skillsync"
+PLIST_NAME="com.skillsync.plist"
 
-echo "=== Antigravity Sync Installer ==="
+echo "=== SkillSync Installer ==="
 echo
 
 # Colors for output
@@ -29,8 +29,8 @@ fi
 
 # Step 1: Create required directories
 info "Creating directories..."
-mkdir -p "$HOME/antigravity/logs"
-mkdir -p "$HOME/.gemini/antigravity/skills"
+mkdir -p "$HOME/skillsync/logs"
+mkdir -p "$HOME/.gemini/skillsync/skills"
 mkdir -p "$HOME/Library/LaunchAgents"
 
 # Step 2: Build release binary
@@ -43,9 +43,9 @@ if [[ ! -f "target/release/$BINARY_NAME" ]]; then
 fi
 
 # Step 3: Stop existing service if running
-if launchctl list | grep -q "$PLIST_NAME" 2>/dev/null; then
+if launchctl list | grep -q "com.skillsync" 2>/dev/null; then
     info "Stopping existing service..."
-    launchctl stop "com.antigravity.sync" 2>/dev/null || true
+    launchctl stop "com.skillsync" 2>/dev/null || true
     launchctl unload "$HOME/Library/LaunchAgents/$PLIST_NAME" 2>/dev/null || true
 fi
 
@@ -62,25 +62,25 @@ cp "$PROJECT_DIR/$PLIST_NAME" "$HOME/Library/LaunchAgents/$PLIST_NAME"
 # Step 6: Load and start service
 info "Loading and starting service..."
 launchctl load "$HOME/Library/LaunchAgents/$PLIST_NAME"
-launchctl start "com.antigravity.sync"
+launchctl start "com.skillsync"
 
 # Verify
 sleep 1
-if launchctl list | grep -q "com.antigravity.sync"; then
+if launchctl list | grep -q "com.skillsync"; then
     echo
     info "Installation complete!"
     echo
     echo "Service status:"
-    launchctl list | grep "antigravity" || true
+    launchctl list | grep "skillsync" || true
     echo
-    echo "Logs: $HOME/antigravity/logs/antigravity.log"
+    echo "Logs: $HOME/skillsync/logs/skillsync.log"
     echo
     echo "Commands:"
-    echo "  View logs:     tail -f ~/antigravity/logs/antigravity.log"
-    echo "  Stop service:  launchctl stop com.antigravity.sync"
-    echo "  Start service: launchctl start com.antigravity.sync"
+    echo "  View logs:     tail -f ~/skillsync/logs/skillsync.log"
+    echo "  Stop service:  launchctl stop com.skillsync"
+    echo "  Start service: launchctl start com.skillsync"
     echo "  Uninstall:     ./scripts/uninstall.sh"
 else
     warn "Service may not have started correctly. Check logs:"
-    echo "  tail -f ~/antigravity/logs/antigravity.log"
+    echo "  tail -f ~/skillsync/logs/skillsync.log"
 fi

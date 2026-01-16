@@ -1,7 +1,7 @@
-//! Antigravity - Sync Claude skills to Gemini in real-time
+//! SkillSync - Sync Claude skills to Gemini in real-time
 //!
 //! A macOS daemon that watches ~/.claude/skills/ and mirrors changes
-//! to ~/.gemini/antigravity/skills/
+//! to ~/.gemini/skillsync/skills/
 
 use anyhow::{Context, Result};
 use notify::RecursiveMode;
@@ -16,17 +16,17 @@ use tracing_subscriber::fmt::format::FmtSpan;
 
 const DEBOUNCE_MS: u64 = 100;
 
-struct AntigravitySync {
+struct SkillSync {
     source: PathBuf,
     destination: PathBuf,
 }
 
-impl AntigravitySync {
+impl SkillSync {
     fn new() -> Result<Self> {
         let home = home::home_dir().context("Could not determine home directory")?;
 
         let source = home.join(".claude").join("skills");
-        let destination = home.join(".gemini").join("antigravity").join("skills");
+        let destination = home.join(".gemini").join("skillsync").join("skills");
 
         Ok(Self { source, destination })
     }
@@ -34,7 +34,7 @@ impl AntigravitySync {
     /// Ensure all required directories exist
     fn ensure_directories(&self) -> Result<()> {
         let home = home::home_dir().context("Could not determine home directory")?;
-        let log_dir = home.join("antigravity").join("logs");
+        let log_dir = home.join("skillsync").join("logs");
 
         // Create log directory
         fs::create_dir_all(&log_dir)
@@ -193,13 +193,13 @@ impl AntigravitySync {
 
 fn setup_logging() -> Result<tracing_appender::non_blocking::WorkerGuard> {
     let home = home::home_dir().context("Could not determine home directory")?;
-    let log_dir = home.join("antigravity").join("logs");
+    let log_dir = home.join("skillsync").join("logs");
 
     // Ensure log directory exists
     fs::create_dir_all(&log_dir)?;
 
-    // Create a file appender that writes to antigravity.log
-    let file_appender = RollingFileAppender::new(Rotation::NEVER, &log_dir, "antigravity.log");
+    // Create a file appender that writes to skillsync.log
+    let file_appender = RollingFileAppender::new(Rotation::NEVER, &log_dir, "skillsync.log");
     let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
 
     // Set up subscriber with both stdout and file output
@@ -219,10 +219,10 @@ fn main() -> Result<()> {
     // Set up logging first
     let _guard = setup_logging()?;
 
-    info!("antigravity daemon starting");
+    info!("skillsync daemon starting");
 
     // Initialize sync manager
-    let sync = AntigravitySync::new()?;
+    let sync = SkillSync::new()?;
     sync.ensure_directories()?;
 
     // Perform initial sync
@@ -280,6 +280,6 @@ fn main() -> Result<()> {
         }
     }
 
-    info!("antigravity daemon shutting down");
+    info!("skillsync daemon shutting down");
     Ok(())
 }

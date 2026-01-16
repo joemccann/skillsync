@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
     <key>Label</key>
-    <string>com.antigravity.sync</string>
+    <string>com.skillsync</string>
 
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/local/bin/antigravity</string>
+        <string>/usr/local/bin/skillsync</string>
     </array>
 
     <key>RunAtLoad</key>

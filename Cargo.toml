@@ -1,5 +1,5 @@
 [package]
-name = "antigravity"
+name = "skillsync"
 version = "0.1.0"
 edition = "2021"
 description = "Sync Claude skills to Gemini in real-time"
@@ -7,7 +7,7 @@ authors = ["Joe McCann"]
 license = "MIT"
 
 [[bin]]
-name = "antigravity"
+name = "skillsync"
 path = "src/main.rs"
 
 [dependencies]

@@ -1,12 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-# Antigravity Sync - Uninstallation Script
+# SkillSync - Uninstallation Script
 
-PLIST_NAME="com.antigravity.sync.plist"
-BINARY_NAME="antigravity"
+PLIST_NAME="com.skillsync.plist"
+BINARY_NAME="skillsync"
 
-echo "=== Antigravity Sync Uninstaller ==="
+echo "=== SkillSync Uninstaller ==="
 echo
 
 RED='\033[0;31m'
@@ -16,9 +16,9 @@ NC='\033[0m'
 info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 
 # Stop and unload service
-if launchctl list | grep -q "com.antigravity.sync" 2>/dev/null; then
+if launchctl list | grep -q "com.skillsync" 2>/dev/null; then
     info "Stopping service..."
-    launchctl stop "com.antigravity.sync" 2>/dev/null || true
+    launchctl stop "com.skillsync" 2>/dev/null || true
     launchctl unload "$HOME/Library/LaunchAgents/$PLIST_NAME" 2>/dev/null || true
 fi
 
@@ -37,9 +37,9 @@ fi
 echo
 info "Uninstallation complete!"
 echo
-echo "Note: Log directory ~/antigravity/logs/ was preserved."
-echo "Note: Synced files in ~/.gemini/antigravity/skills/ were preserved."
+echo "Note: Log directory ~/skillsync/logs/ was preserved."
+echo "Note: Synced files in ~/.gemini/skillsync/skills/ were preserved."
 echo
 echo "To remove all data:"
-echo "  rm -rf ~/antigravity"
-echo "  rm -rf ~/.gemini/antigravity"
+echo "  rm -rf ~/skillsync"
+echo "  rm -rf ~/.gemini/skillsync"
