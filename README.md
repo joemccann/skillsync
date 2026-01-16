@@ -2,7 +2,9 @@
 
 A macOS daemon that mirrors Claude skills to Gemini in real-time.
 
-Claude is the source of truth. Any change in `~/.claude/skills/` is automatically synced to `~/.gemini/skillsync/skills/`.
+Claude is the source of truth. Any change in `~/.claude/skills/` is automatically synced to both:
+- `~/.gemini/skillsync/skills/`
+- `~/.gemini/antigravity/skills/`
 
 ## Features
 
@@ -48,6 +50,7 @@ sudo chmod +x /usr/local/bin/skillsync
 # Create directories
 mkdir -p ~/skillsync/logs
 mkdir -p ~/.gemini/skillsync/skills
+mkdir -p ~/.gemini/antigravity/skills
 
 # Install and start launchd service
 cp com.skillsync.plist ~/Library/LaunchAgents/
@@ -102,7 +105,8 @@ sudo rm /usr/local/bin/skillsync
 | Path | Purpose |
 |------|---------|
 | `~/.claude/skills/` | Source (watched) |
-| `~/.gemini/skillsync/skills/` | Destination (synced) |
+| `~/.gemini/skillsync/skills/` | Destination 1 (synced) |
+| `~/.gemini/antigravity/skills/` | Destination 2 (synced) |
 | `~/skillsync/logs/skillsync.log` | Application logs |
 | `/usr/local/bin/skillsync` | Installed binary |
 | `~/Library/LaunchAgents/com.skillsync.plist` | launchd config |

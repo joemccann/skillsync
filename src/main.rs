@@ -1,7 +1,7 @@
 //! SkillSync - Sync Claude skills to Gemini in real-time
 //!
 //! A macOS daemon that watches ~/.claude/skills/ and mirrors changes
-//! to ~/.gemini/skillsync/skills/
+//! to ~/.gemini/skillsync/skills/ and ~/.gemini/antigravity/skills/
 
 use anyhow::{Context, Result};
 use notify::RecursiveMode;
@@ -18,7 +18,7 @@ const DEBOUNCE_MS: u64 = 100;
 
 struct SkillSync {
     source: PathBuf,
-    destination: PathBuf,
+    destinations: Vec<PathBuf>,
 }
 
 impl SkillSync {
@@ -26,9 +26,14 @@ impl SkillSync {
         let home = home::home_dir().context("Could not determine home directory")?;
 
         let source = home.join(".claude").join("skills");
-        let destination = home.join(".gemini").join("skillsync").join("skills");
 
-        Ok(Self { source, destination })
+        // Sync to both skillsync and antigravity directories
+        let destinations = vec![
+            home.join(".gemini").join("skillsync").join("skills"),
+            home.join(".gemini").join("antigravity").join("skills"),
+        ];
+
+        Ok(Self { source, destinations })
     }
 
     /// Ensure all required directories exist
@@ -40,15 +45,17 @@ impl SkillSync {
         fs::create_dir_all(&log_dir)
             .with_context(|| format!("Failed to create log directory: {}", log_dir.display()))?;
 
-        // Create destination directory
-        fs::create_dir_all(&self.destination)
-            .with_context(|| format!("Failed to create destination: {}", self.destination.display()))?;
+        // Create all destination directories
+        for dest in &self.destinations {
+            fs::create_dir_all(dest)
+                .with_context(|| format!("Failed to create destination: {}", dest.display()))?;
+        }
 
-        info!("directories initialized");
+        info!(destinations = self.destinations.len(), "directories initialized");
         Ok(())
     }
 
-    /// Perform initial full sync from source to destination
+    /// Perform initial full sync from source to all destinations
     fn initial_sync(&self) -> Result<()> {
         info!("starting initial sync");
 
@@ -59,7 +66,7 @@ impl SkillSync {
 
         self.sync_directory(&self.source)?;
 
-        // Clean up orphaned files in destination
+        // Clean up orphaned files in all destinations
         self.cleanup_orphans()?;
 
         info!("initial sync completed");
@@ -86,53 +93,64 @@ impl SkillSync {
         Ok(())
     }
 
-    /// Sync a single file from source to destination
+    /// Sync a single file from source to all destinations
     fn sync_file(&self, source_path: &Path) -> Result<()> {
         let relative = source_path
             .strip_prefix(&self.source)
             .with_context(|| format!("Path {} is not under source", source_path.display()))?;
 
-        let dest_path = self.destination.join(relative);
+        for dest in &self.destinations {
+            let dest_path = dest.join(relative);
 
-        // Create parent directories if needed
-        if let Some(parent) = dest_path.parent() {
-            fs::create_dir_all(parent)?;
+            // Create parent directories if needed
+            if let Some(parent) = dest_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+
+            // Copy file
+            fs::copy(source_path, &dest_path)
+                .with_context(|| format!("Failed to copy {} to {}", source_path.display(), dest_path.display()))?;
         }
-
-        // Copy file
-        fs::copy(source_path, &dest_path)
-            .with_context(|| format!("Failed to copy {} to {}", source_path.display(), dest_path.display()))?;
 
         info!(file = %relative.display(), "synced");
         Ok(())
     }
 
-    /// Remove a file from destination
+    /// Remove a file from all destinations
     fn remove_file(&self, source_path: &Path) -> Result<()> {
         let relative = source_path
             .strip_prefix(&self.source)
             .with_context(|| format!("Path {} is not under source", source_path.display()))?;
 
-        let dest_path = self.destination.join(relative);
+        for dest in &self.destinations {
+            let dest_path = dest.join(relative);
 
-        if dest_path.exists() {
-            if dest_path.is_dir() {
-                fs::remove_dir_all(&dest_path)?;
-            } else {
-                fs::remove_file(&dest_path)?;
+            if dest_path.exists() {
+                if dest_path.is_dir() {
+                    fs::remove_dir_all(&dest_path)?;
+                } else {
+                    fs::remove_file(&dest_path)?;
+                }
             }
-            info!(file = %relative.display(), "removed");
         }
 
+        info!(file = %relative.display(), "removed");
         Ok(())
     }
 
-    /// Remove orphaned files/directories in destination that don't exist in source
+    /// Remove orphaned files/directories in all destinations that don't exist in source
     fn cleanup_orphans(&self) -> Result<()> {
-        self.cleanup_orphans_recursive(&self.destination)
+        for dest in &self.destinations {
+            self.cleanup_orphans_for_dest(dest)?;
+        }
+        Ok(())
     }
 
-    fn cleanup_orphans_recursive(&self, dest_dir: &Path) -> Result<()> {
+    fn cleanup_orphans_for_dest(&self, dest: &Path) -> Result<()> {
+        self.cleanup_orphans_recursive(dest, dest)
+    }
+
+    fn cleanup_orphans_recursive(&self, dest_root: &Path, dest_dir: &Path) -> Result<()> {
         if !dest_dir.exists() {
             return Ok(());
         }
@@ -144,7 +162,7 @@ impl SkillSync {
             let dest_path = entry.path();
 
             let relative = dest_path
-                .strip_prefix(&self.destination)
+                .strip_prefix(dest_root)
                 .context("Invalid destination path")?;
 
             let source_path = self.source.join(relative);
@@ -152,12 +170,12 @@ impl SkillSync {
             if !source_path.exists() {
                 entries_to_remove.push(dest_path.clone());
             } else if dest_path.is_dir() {
-                self.cleanup_orphans_recursive(&dest_path)?;
+                self.cleanup_orphans_recursive(dest_root, &dest_path)?;
             }
         }
 
         for path in entries_to_remove {
-            let relative = path.strip_prefix(&self.destination).unwrap_or(&path);
+            let relative = path.strip_prefix(dest_root).unwrap_or(&path);
             if path.is_dir() {
                 fs::remove_dir_all(&path)?;
             } else {
