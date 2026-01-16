@@ -4,8 +4,8 @@
 //! to ~/.gemini/antigravity/skills/
 
 use anyhow::{Context, Result};
-use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
-use notify_debouncer_mini::{new_debouncer, DebouncedEventKind};
+use notify::RecursiveMode;
+use notify_debouncer_mini::new_debouncer;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
@@ -170,36 +170,21 @@ impl AntigravitySync {
     }
 
     /// Handle a file system event
-    fn handle_event(&self, path: &Path, kind: DebouncedEventKind) -> Result<()> {
+    fn handle_event(&self, path: &Path) -> Result<()> {
         // Only process events under our source directory
         if !path.starts_with(&self.source) {
             return Ok(());
         }
 
-        match kind {
-            DebouncedEventKind::Any => {
-                // File was created or modified
-                if path.exists() {
-                    if path.is_dir() {
-                        self.sync_directory(path)?;
-                    } else {
-                        self.sync_file(path)?;
-                    }
-                } else {
-                    // File was deleted
-                    self.remove_file(path)?;
-                }
+        if path.exists() {
+            if path.is_dir() {
+                self.sync_directory(path)?;
+            } else {
+                self.sync_file(path)?;
             }
-            DebouncedEventKind::AnySynthetic => {
-                // Synthetic events from rescans - treat same as Any
-                if path.exists() {
-                    if path.is_dir() {
-                        self.sync_directory(path)?;
-                    } else {
-                        self.sync_file(path)?;
-                    }
-                }
-            }
+        } else {
+            // File was deleted
+            self.remove_file(path)?;
         }
 
         Ok(())
@@ -273,7 +258,7 @@ fn main() -> Result<()> {
         match rx.recv_timeout(Duration::from_secs(1)) {
             Ok(Ok(events)) => {
                 for event in events {
-                    if let Err(e) = sync.handle_event(&event.path, event.kind) {
+                    if let Err(e) = sync.handle_event(&event.path) {
                         warn!(
                             path = %event.path.display(),
                             error = %e,
@@ -282,10 +267,8 @@ fn main() -> Result<()> {
                     }
                 }
             }
-            Ok(Err(errors)) => {
-                for error in errors {
-                    error!(error = %error, "watch error");
-                }
+            Ok(Err(err)) => {
+                error!(error = %err, "watch error");
             }
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {
                 // Normal timeout, continue loop
