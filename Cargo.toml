@@ -1,0 +1,26 @@
+[package]
+name = "antigravity"
+version = "0.1.0"
+edition = "2021"
+description = "Sync Claude skills to Gemini in real-time"
+authors = ["Joe McCann"]
+license = "MIT"
+
+[[bin]]
+name = "antigravity"
+path = "src/main.rs"
+
+[dependencies]
+notify = { version = "6", default-features = false, features = ["macos_fsevent"] }
+notify-debouncer-mini = { version = "0.4", default-features = false }
+home = "0.5"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt", "std"] }
+tracing-appender = "0.2"
+anyhow = "1"
+ctrlc = "3"
+
+[profile.release]
+opt-level = 3
+lto = true
+strip = true
