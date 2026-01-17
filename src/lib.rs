@@ -8,6 +8,7 @@ pub mod destination;
 pub mod sync;
 pub mod transform;
 pub mod watcher;
+pub mod preflight;
 
 pub use config::Config;
 pub use destination::{Destination, DestinationType};
@@ -48,10 +49,18 @@ pub fn run() -> Result<()> {
     // Load configuration
     let config = Config::new()?;
 
-    // Set up logging
+// Set up logging
     let _guard = setup_logging(&config.log_dir)?;
 
     tracing::info!("skillsync daemon starting");
+
+    // Preflight checks (non-fatal except missing Claude source)
+    let outcome = preflight::check_all(&config)?;
+    if !outcome.claude_ok {
+        // Without a source to watch, there's nothing to do. Exit gracefully.
+        tracing::warn!("Exiting: Claude skills directory missing. Create ~/.claude/skills and restart.");
+        return Ok(());
+    }
 
     // Initialize sync manager
     let sync = SkillSync::new(config.source.clone(), config.destinations);

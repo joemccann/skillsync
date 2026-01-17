@@ -65,6 +65,15 @@ launchctl start com.skillsync
 
 Once installed, SkillSync runs automatically in the background.
 
+### Preflight Checks
+
+On startup the daemon runs environment checks before syncing:
+- Claude Code skills directory exists at `~/.claude/skills/` (required)
+- Gemini CLI is available on PATH (best-effort; warns if not found)
+- Antigravity destination directory presence (warns if missing; will be created)
+
+If the Claude skills directory is missing, the daemon logs a message and exits gracefully. Create `~/.claude/skills/` and restart.
+
 ### View Logs
 
 ```bash
