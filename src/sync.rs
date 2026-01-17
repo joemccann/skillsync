@@ -123,8 +123,9 @@ impl SkillSync {
 
                     // Write as {skill_name}.toml in commands directory
                     let dest_path = dest.base_path.join(format!("{}.toml", skill_name));
-                    fs::write(&dest_path, toml_content)
-                        .with_context(|| format!("Failed to write TOML to {}", dest_path.display()))?;
+                    fs::write(&dest_path, toml_content).with_context(|| {
+                        format!("Failed to write TOML to {}", dest_path.display())
+                    })?;
                 }
             }
         }

@@ -16,8 +16,8 @@ pub fn watch_and_sync(sync: SkillSync, source: &Path) -> Result<()> {
     // Set up file watcher with debouncing
     let (tx, rx) = channel();
 
-    let mut debouncer =
-        new_debouncer(Duration::from_millis(DEBOUNCE_MS), tx).context("Failed to create debouncer")?;
+    let mut debouncer = new_debouncer(Duration::from_millis(DEBOUNCE_MS), tx)
+        .context("Failed to create debouncer")?;
 
     // Watch source directory
     debouncer

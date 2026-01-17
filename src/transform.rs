@@ -31,12 +31,7 @@ pub fn parse_frontmatter(content: &str) -> (FrontmatterData, String) {
     let mut description = None;
     for line in &lines[1..end] {
         if let Some(desc) = line.strip_prefix("description:") {
-            description = Some(
-                desc.trim()
-                    .trim_matches('"')
-                    .trim_matches('\'')
-                    .to_string(),
-            );
+            description = Some(desc.trim().trim_matches('"').trim_matches('\'').to_string());
         }
     }
 
@@ -67,8 +62,7 @@ mod tests {
 
     #[test]
     fn test_parse_frontmatter_with_description() {
-        let content =
-            "---\nname: test\ndescription: Test skill\n---\n\n# Content\nTest content";
+        let content = "---\nname: test\ndescription: Test skill\n---\n\n# Content\nTest content";
         let (frontmatter, stripped) = parse_frontmatter(content);
 
         assert_eq!(frontmatter.description, Some("Test skill".to_string()));

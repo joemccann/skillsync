@@ -104,7 +104,11 @@ fn test_cleanup_orphans_toml() {
 
     // Create an orphaned TOML file (no corresponding source)
     let orphan_toml = dest3_dir.path().join("orphan-skill.toml");
-    fs::write(&orphan_toml, "description = \"Test\"\nprompt = \"\"\"Test\"\"\"").unwrap();
+    fs::write(
+        &orphan_toml,
+        "description = \"Test\"\nprompt = \"\"\"Test\"\"\"",
+    )
+    .unwrap();
 
     assert!(orphan_toml.exists());
 
@@ -134,16 +138,8 @@ fn test_sync_directory_recursive() {
     sync.initial_sync().unwrap();
 
     // Check both skills synced
-    assert!(dest1_dir
-        .path()
-        .join("skill1")
-        .join("SKILL.md")
-        .exists());
-    assert!(dest1_dir
-        .path()
-        .join("skill2")
-        .join("SKILL.md")
-        .exists());
+    assert!(dest1_dir.path().join("skill1").join("SKILL.md").exists());
+    assert!(dest1_dir.path().join("skill2").join("SKILL.md").exists());
 }
 
 #[test]

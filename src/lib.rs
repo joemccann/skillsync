@@ -20,7 +20,9 @@ use tracing_appender::rolling::{RollingFileAppender, Rotation};
 use tracing_subscriber::fmt::format::FmtSpan;
 
 /// Set up logging to file
-pub fn setup_logging(log_dir: &std::path::Path) -> Result<tracing_appender::non_blocking::WorkerGuard> {
+pub fn setup_logging(
+    log_dir: &std::path::Path,
+) -> Result<tracing_appender::non_blocking::WorkerGuard> {
     // Ensure log directory exists
     fs::create_dir_all(log_dir)?;
 
