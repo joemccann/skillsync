@@ -49,7 +49,10 @@ Hello
 
     // Prompt must not contain YAML markers (frontmatter stripped)
     let prompt = value.get("prompt").unwrap().as_str().unwrap();
-    assert!(!prompt.contains("---"), "YAML frontmatter leaked into prompt");
+    assert!(
+        !prompt.contains("---"),
+        "YAML frontmatter leaked into prompt"
+    );
 }
 
 #[test]

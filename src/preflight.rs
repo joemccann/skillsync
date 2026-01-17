@@ -76,7 +76,11 @@ pub fn check_all(cfg: &Config) -> Result<PreflightOutcome> {
         for base_path in search_paths {
             let path = Path::new(&base_path);
             // For nvm/fnm/nodenv/asdf, we need to search recursively for the gemini binary
-            if base_path.contains("nvm") || base_path.contains("fnm") || base_path.contains("nodenv") || base_path.contains("asdf") {
+            if base_path.contains("nvm")
+                || base_path.contains("fnm")
+                || base_path.contains("nodenv")
+                || base_path.contains("asdf")
+            {
                 if path.exists() {
                     if let Ok(entries) = std::fs::read_dir(path) {
                         for entry in entries.flatten() {
