@@ -67,6 +67,11 @@ pub fn run() -> Result<()> {
         tracing::warn!("Exiting: Gemini CLI not found on PATH. Install and expose 'gemini' before running SkillSync.");
         return Ok(());
     }
+    if !outcome.codex_cli_ok {
+        tracing::warn!(
+            "Codex CLI not found on PATH. Skills will still be synced to ~/.codex/skills/."
+        );
+    }
 
     // Initialize sync manager
     let sync = SkillSync::new(config.source.clone(), config.destinations);

@@ -29,6 +29,10 @@ impl Config {
                 DestinationType::ClaudeStyle,
             ),
             Destination::new(
+                home.join(".codex").join("skills"),
+                DestinationType::ClaudeStyle,
+            ),
+            Destination::new(
                 home.join(".gemini").join("commands"),
                 DestinationType::GeminiToml,
             ),

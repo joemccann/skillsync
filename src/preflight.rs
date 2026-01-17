@@ -10,11 +10,12 @@ pub struct PreflightOutcome {
     pub claude_ok: bool,
     pub gemini_cli_ok: bool,
     pub antigravity_ok: bool,
+    pub codex_cli_ok: bool,
 }
 
 impl PreflightOutcome {
     pub fn all_good(&self) -> bool {
-        self.claude_ok && self.gemini_cli_ok && self.antigravity_ok
+        self.claude_ok && self.gemini_cli_ok && self.antigravity_ok && self.codex_cli_ok
     }
 }
 
@@ -23,6 +24,7 @@ pub fn check_all(cfg: &Config) -> Result<PreflightOutcome> {
         claude_ok: false,
         gemini_cli_ok: false,
         antigravity_ok: false,
+        codex_cli_ok: false,
     };
 
     // 1) Claude Code skills source must exist
@@ -117,7 +119,79 @@ pub fn check_all(cfg: &Config) -> Result<PreflightOutcome> {
         out.gemini_cli_ok = false;
     }
 
-    // 3) Antigravity destination presence (directory)
+    // 3) Codex CLI presence
+    // Check PATH first, then common npm/nvm installation locations
+    let codex_found = if let Ok(path) = which::which("codex") {
+        out.codex_cli_ok = true;
+        info!(binary = %path.display(), "Codex CLI detected");
+        true
+    } else {
+        // Reuse search paths from Gemini (assuming similar installation via npm/node)
+        let home = std::env::var("HOME").unwrap_or_default();
+        let search_paths = vec![
+            format!("{}/.nvm/versions/node", home),
+            format!("{}/.fnm/node-versions", home),
+            format!("{}/.volta/bin/codex", home),
+            format!("{}/.nodenv/versions", home),
+            format!("{}/.asdf/installs/nodejs", home),
+            format!("{}/.npm-global/bin/codex", home),
+            "/opt/homebrew/bin/codex".to_string(),
+            "/usr/local/bin/codex".to_string(),
+        ];
+
+        let mut found = false;
+        for base_path in search_paths {
+            let path = Path::new(&base_path);
+            if base_path.contains("nvm")
+                || base_path.contains("fnm")
+                || base_path.contains("nodenv")
+                || base_path.contains("asdf")
+            {
+                if path.exists() {
+                    if let Ok(entries) = std::fs::read_dir(path) {
+                        for entry in entries.flatten() {
+                            let codex_bin = entry.path().join("bin/codex");
+                            if codex_bin.exists() {
+                                out.codex_cli_ok = true;
+                                info!(binary = %codex_bin.display(), "Codex CLI detected (version manager)");
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else if path.exists() {
+                out.codex_cli_ok = true;
+                info!(binary = %path.display(), "Codex CLI detected");
+                found = true;
+                break;
+            }
+            if found {
+                break;
+            }
+        }
+
+        // Not fatal if missing, just log/warn? User request implies support is needed.
+        // If we want to be strict like Gemini:
+        if !found {
+            warn!("Codex CLI not found. Syncing to ~/.codex/skills will still occur, but the CLI might not be available.");
+            // We'll mark it as OK to avoid stopping the daemon, as Codex might be optional?
+            // But if the user strictly wants it, maybe we should warn louder.
+            // Given the user said "Any time... it needs to... installing... for codex", it sounds like the FILE sync is the priority.
+            // So I will set codex_cli_ok = true (or not block on it) but maybe log a warning.
+            // Actually, the prompt says "investgiate ... where skills are installed for codex cli".
+            // If I mark it false, I need to decide if main.rs should exit.
+            // For now, I'll mark it true but warn, so the daemon continues.
+            // Wait, if I mark it true here despite not finding it, I should just init it to true?
+            // No, let's track it accurately.
+            // I'll leave it as false if not found. And handle it in main.rs (warn but continue).
+        }
+        found
+    };
+    // Initialize to found status
+    out.codex_cli_ok = codex_found;
+
+    // 4) Antigravity destination presence (directory)
     let antigravity_dir = cfg
         .destinations
         .iter()
@@ -132,6 +206,20 @@ pub fn check_all(cfg: &Config) -> Result<PreflightOutcome> {
         // Not fatal — we'll create it later — but surface as a warning so users can verify install
         warn!(path = %antigravity_dir.display(), "Antigravity directory not found (will be created)");
         out.antigravity_ok = true; // treat as OK since we can create it
+    }
+
+    // 5) Codex directory presence (informational)
+    let codex_dir = cfg
+        .destinations
+        .iter()
+        .find(|d| d.base_path.to_string_lossy().contains(".codex/skills"))
+        .map(|d| d.base_path.as_path())
+        .unwrap_or(Path::new("/nonexistent"));
+
+    if codex_dir.exists() {
+        info!(path = %codex_dir.display(), "Codex skills directory detected");
+    } else {
+        warn!(path = %codex_dir.display(), "Codex skills directory not found (will be created)");
     }
 
     Ok(out)
