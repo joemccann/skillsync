@@ -37,16 +37,80 @@ pub fn check_all(cfg: &Config) -> Result<PreflightOutcome> {
     }
 
     // 2) Gemini CLI presence (best-effort)
-    match which::which("gemini") {
-        Ok(path) => {
-            out.gemini_cli_ok = true;
-            info!(binary = %path.display(), "Gemini CLI detected");
+    // Check PATH first, then common npm/nvm installation locations
+    let gemini_found = if let Ok(path) = which::which("gemini") {
+        out.gemini_cli_ok = true;
+        info!(binary = %path.display(), "Gemini CLI detected");
+        true
+    } else {
+        // Check common npm/node installation locations:
+        // - nvm (Node Version Manager)
+        // - fnm (Fast Node Manager)
+        // - Volta (JavaScript toolchain manager)
+        // - nodenv (rbenv-style version manager)
+        // - asdf (multi-language version manager)
+        // - npm global installs
+        // - Homebrew (Apple Silicon and Intel)
+        // - system paths
+        let home = std::env::var("HOME").unwrap_or_default();
+        let search_paths = vec![
+            // nvm
+            format!("{}/.nvm/versions/node", home),
+            // fnm
+            format!("{}/.fnm/node-versions", home),
+            // Volta
+            format!("{}/.volta/bin/gemini", home),
+            // nodenv
+            format!("{}/.nodenv/versions", home),
+            // asdf
+            format!("{}/.asdf/installs/nodejs", home),
+            // npm global
+            format!("{}/.npm-global/bin/gemini", home),
+            // Homebrew (Apple Silicon - M1/M2/M3)
+            "/opt/homebrew/bin/gemini".to_string(),
+            // Homebrew (Intel Mac)
+            "/usr/local/bin/gemini".to_string(),
+        ];
+
+        let mut found = false;
+        for base_path in search_paths {
+            let path = Path::new(&base_path);
+            // For nvm/fnm/nodenv/asdf, we need to search recursively for the gemini binary
+            if base_path.contains("nvm") || base_path.contains("fnm") || base_path.contains("nodenv") || base_path.contains("asdf") {
+                if path.exists() {
+                    if let Ok(entries) = std::fs::read_dir(path) {
+                        for entry in entries.flatten() {
+                            let gemini_bin = entry.path().join("bin/gemini");
+                            if gemini_bin.exists() {
+                                out.gemini_cli_ok = true;
+                                info!(binary = %gemini_bin.display(), "Gemini CLI detected (version manager)");
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            } else if path.exists() {
+                out.gemini_cli_ok = true;
+                info!(binary = %path.display(), "Gemini CLI detected");
+                found = true;
+                break;
+            }
+            if found {
+                break;
+            }
         }
-        Err(_) => {
+
+        if !found {
             error!(
-                "Gemini CLI not found on PATH. SkillSync requires the 'gemini' binary.\nRemediation: install the Gemini CLI and ensure it's on PATH for launchd.\nIf using nvm/asdf, either:\n  • add the full path to your LaunchAgent EnvironmentVariables PATH, or\n  • create a wrapper at /usr/local/bin/gemini that execs your Node-managed binary."
+                "Gemini CLI not found on PATH or in common installation locations.\nSkillSync requires the 'gemini' binary.\nRemediation: install the Gemini CLI:\n  • npm install -g @google/gemini-cli\nSupported Node.js installation methods:\n  • Homebrew (brew install node)\n  • nvm (Node Version Manager)\n  • fnm (Fast Node Manager)\n  • Volta (JavaScript toolchain manager)\n  • nodenv (rbenv-style version manager)\n  • asdf (multi-language version manager)\n  • Official installer from nodejs.org\nThe installer will automatically detect and configure your Node.js installation."
             );
         }
+        found
+    };
+
+    if !gemini_found {
+        out.gemini_cli_ok = false;
     }
 
     // 3) Antigravity destination presence (directory)

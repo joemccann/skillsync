@@ -24,6 +24,8 @@ Claude is the source of truth. Any change in `~/.claude/skills/` is automaticall
 
 - macOS
 - [Rust](https://rustup.rs)
+- Node.js (for Gemini CLI via `npm install -g @google/gemini-cli`)
+  - Supported installation methods: Homebrew, nvm, fnm, Volta, nodenv, asdf, or official installer
 
 ### Quick Install
 
@@ -36,8 +38,9 @@ cd skillsync
 This will:
 1. Build the release binary
 2. Install to `/usr/local/bin/skillsync`
-3. Install `resources/com.skillsync.plist` to `~/Library/LaunchAgents/`
-4. Configure launchd for auto-start and start the service
+3. Detect your Node.js installation and configure PATH for launchd
+4. Install `resources/com.skillsync.plist` to `~/Library/LaunchAgents/`
+5. Configure launchd for auto-start and start the service
 
 ### Manual Install
 
@@ -69,12 +72,22 @@ Once installed, SkillSync runs automatically in the background.
 
 On startup the daemon runs environment checks before syncing:
 - Claude Code skills directory exists at `~/.claude/skills/` (required)
-- Gemini CLI (`gemini`) is available on PATH (required)
+- Gemini CLI (`gemini`) is available on PATH or in common installation locations (required)
 - Antigravity destination directory presence (warns if missing; will be created)
 
-If the Claude skills directory or Gemini CLI is missing, the daemon logs a message and exits gracefully.
+The preflight check searches for `gemini` in multiple locations:
+- System PATH
+- Homebrew: `/opt/homebrew/bin` (Apple Silicon), `/usr/local/bin` (Intel)
+- nvm: `~/.nvm/versions/node/*/bin`
+- fnm: `~/.fnm/node-versions/*/bin`
+- Volta: `~/.volta/bin`
+- nodenv: `~/.nodenv/versions/*/bin`
+- asdf: `~/.asdf/installs/nodejs/*/bin`
+- npm global: `~/.npm-global/bin`
 
-Tip for launchd environments: if you installed Gemini CLI via nvm/asdf, ensure PATH is exported in your LaunchAgent or create a wrapper at `/usr/local/bin/gemini` that execs your CLI binary.
+The `install.sh` script automatically detects your Node.js installation and configures the launchd PATH to include the necessary directories.
+
+If the Claude skills directory or Gemini CLI is missing, the daemon logs an error message and exits gracefully.
 
 ### View Logs
 

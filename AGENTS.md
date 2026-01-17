@@ -105,8 +105,22 @@ The codebase is organized into focused modules:
 
 On startup the daemon runs environment checks:
 - Requires Claude Code skills directory at `~/.claude/skills/` (exits if missing)
-- Requires Gemini CLI binary `gemini` on PATH (exits if missing)
+- Requires Gemini CLI binary `gemini` on PATH or in common installation locations (exits if missing)
+  - Searches: PATH, Homebrew (Apple Silicon + Intel), nvm, fnm, Volta, nodenv, asdf, npm global
 - Warns if Antigravity destination directory is missing (it will be created)
+
+**Node.js Version Manager Support:**
+The preflight check and install script support all major Node.js installation methods on macOS:
+- **Homebrew**: `/opt/homebrew/bin` (Apple Silicon), `/usr/local/bin` (Intel)
+- **nvm**: `~/.nvm/versions/node/*/bin`
+- **fnm** (Fast Node Manager): `~/.fnm/node-versions/*/bin`
+- **Volta**: `~/.volta/bin`
+- **nodenv**: `~/.nodenv/versions/*/bin`
+- **asdf**: `~/.asdf/installs/nodejs/*/bin`
+- **npm global**: `~/.npm-global/bin`
+- **Official installer**: `/usr/local/bin`
+
+The `install.sh` script automatically detects active Node.js installations and dynamically configures the launchd plist with appropriate PATH environment variables.
 
 ### Key Behaviors
 
