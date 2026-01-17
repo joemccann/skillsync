@@ -2,16 +2,18 @@
 
 A macOS daemon that mirrors Claude skills to Gemini in real-time.
 
-Claude is the source of truth. Any change in `~/.claude/skills/` is automatically synced to both:
-- `~/.gemini/skillsync/skills/`
-- `~/.gemini/antigravity/skills/`
+Claude is the source of truth. Any change in `~/.claude/skills/` is automatically synced to three destinations with tool-specific transformations:
+- `~/.gemini/skills/` (Claude-style, preserves YAML frontmatter)
+- `~/.gemini/antigravity/skills/` (Claude-style, preserves YAML frontmatter)
+- `~/.gemini/commands/` (Gemini CLI TOML; strips YAML, wraps prompt)
 
 ## Features
 
 - **Real-time sync** using macOS FSEvents
 - **Initial sync** on startup copies all existing files
 - **Deletion sync** removes files when deleted from source
-- **Orphan cleanup** removes destination files not in source
+- **Tool-specific transforms** for Gemini CLI (YAML frontmatter parsing/stripping, TOML generation)
+- **Orphan cleanup** removes destination files not in source (including reverse-mapped TOML)
 - **Debouncing** batches rapid changes (100ms window)
 - **Structured logging** to `~/skillsync/logs/`
 - **launchd integration** for auto-start on login
@@ -34,8 +36,8 @@ cd skillsync
 This will:
 1. Build the release binary
 2. Install to `/usr/local/bin/skillsync`
-3. Configure launchd for auto-start
-4. Start the service
+3. Install `resources/com.skillsync.plist` to `~/Library/LaunchAgents/`
+4. Configure launchd for auto-start and start the service
 
 ### Manual Install
 
@@ -47,13 +49,14 @@ cargo build --release
 sudo cp target/release/skillsync /usr/local/bin/
 sudo chmod +x /usr/local/bin/skillsync
 
-# Create directories
+# Create directories (optional; daemon will create if missing)
 mkdir -p ~/skillsync/logs
-mkdir -p ~/.gemini/skillsync/skills
+mkdir -p ~/.gemini/skills
 mkdir -p ~/.gemini/antigravity/skills
+mkdir -p ~/.gemini/commands
 
 # Install and start launchd service
-cp com.skillsync.plist ~/Library/LaunchAgents/
+cp resources/com.skillsync.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.skillsync.plist
 launchctl start com.skillsync
 ```
@@ -105,8 +108,9 @@ sudo rm /usr/local/bin/skillsync
 | Path | Purpose |
 |------|---------|
 | `~/.claude/skills/` | Source (watched) |
-| `~/.gemini/skillsync/skills/` | Destination 1 (synced) |
-| `~/.gemini/antigravity/skills/` | Destination 2 (synced) |
+| `~/.gemini/skills/` | Destination (Claude-style) |
+| `~/.gemini/antigravity/skills/` | Destination (Claude-style) |
+| `~/.gemini/commands/` | Destination (Gemini CLI TOML) |
 | `~/skillsync/logs/skillsync.log` | Application logs |
 | `/usr/local/bin/skillsync` | Installed binary |
 | `~/Library/LaunchAgents/com.skillsync.plist` | launchd config |

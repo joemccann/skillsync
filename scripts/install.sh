@@ -30,8 +30,9 @@ fi
 # Step 1: Create required directories
 info "Creating directories..."
 mkdir -p "$HOME/skillsync/logs"
-mkdir -p "$HOME/.gemini/skillsync/skills"
+mkdir -p "$HOME/.gemini/skills"
 mkdir -p "$HOME/.gemini/antigravity/skills"
+mkdir -p "$HOME/.gemini/commands"
 mkdir -p "$HOME/Library/LaunchAgents"
 
 # Step 2: Build release binary
