@@ -1,4 +1,20 @@
+# Build artifacts
 /target
-Cargo.lock
 *.log
+
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vim/
+
+# Test output
+tests/output/
+*.tmp

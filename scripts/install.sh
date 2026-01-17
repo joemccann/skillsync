@@ -58,7 +58,7 @@ sudo chmod +x "/usr/local/bin/$BINARY_NAME"
 
 # Step 5: Install launchd plist
 info "Installing launchd configuration..."
-cp "$PROJECT_DIR/$PLIST_NAME" "$HOME/Library/LaunchAgents/$PLIST_NAME"
+cp "$PROJECT_DIR/resources/$PLIST_NAME" "$HOME/Library/LaunchAgents/$PLIST_NAME"
 
 # Step 6: Load and start service
 info "Loading and starting service..."
