@@ -88,6 +88,38 @@ launchctl load ~/Library/LaunchAgents/com.skillsync.plist
 launchctl list | grep skillsync
 ```
 
+## Testing
+
+- Run all tests (unit + integration):
+
+```bash
+cargo test
+```
+
+- Run only unit tests (module-level tests inside src):
+
+```bash
+cargo test --lib
+```
+
+- Run only integration tests (in tests/):
+
+```bash
+cargo test --test integration_tests
+```
+
+- Run a specific test by name (substring match):
+
+```bash
+cargo test test_generate_toml_with_description
+```
+
+- Quick manual validation (one-time sync; 3s timeout):
+
+```bash
+./scripts/test_sync.sh
+```
+
 ### Uninstall
 
 ```bash
