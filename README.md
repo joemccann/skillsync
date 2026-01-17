@@ -15,14 +15,14 @@ Claude is the source of truth. Any change in `~/.claude/skills/` is automaticall
 
 ## Features
 
-- **Real-time sync** using macOS FSEvents
-- **Initial sync** on startup copies all existing files
-- **Deletion sync** removes files when deleted from source
-- **Tool-specific transforms** for Gemini CLI (YAML frontmatter parsing/stripping, TOML generation)
-- **Orphan cleanup** removes destination files not in source (including reverse-mapped TOML)
-- **Debouncing** batches rapid changes (100ms window)
-- **Structured logging** to `~/skillsync/logs/`
-- **launchd integration** for auto-start on login
+- ⚡ **Real-time sync** using macOS FSEvents
+- 🚀 **Initial sync** on startup copies all existing files
+- 🗑️ **Deletion sync** removes files when deleted from source
+- 🛠️ **Tool-specific transforms** for Gemini CLI (YAML frontmatter parsing/stripping, TOML generation)
+- 🧹 **Orphan cleanup** removes destination files not in source (including reverse-mapped TOML)
+- ⏱️ **Debouncing** batches rapid changes (100ms window)
+- 📝 **Structured logging** to `~/skillsync/logs/`
+- 🔄 **launchd integration** for auto-start on login
 
 ## Installation
 
