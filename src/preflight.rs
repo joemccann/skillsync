@@ -43,8 +43,8 @@ pub fn check_all(cfg: &Config) -> Result<PreflightOutcome> {
             info!(binary = %path.display(), "Gemini CLI detected");
         }
         Err(_) => {
-            warn!(
-                "Gemini CLI not found on PATH. If installed via nvm, ensure your shell exports it before launchd starts, or provide an absolute path."
+            error!(
+                "Gemini CLI not found on PATH. SkillSync requires the 'gemini' binary.\nRemediation: install the Gemini CLI and ensure it's on PATH for launchd.\nIf using nvm/asdf, either:\n  • add the full path to your LaunchAgent EnvironmentVariables PATH, or\n  • create a wrapper at /usr/local/bin/gemini that execs your Node-managed binary."
             );
         }
     }

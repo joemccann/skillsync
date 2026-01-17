@@ -69,10 +69,12 @@ Once installed, SkillSync runs automatically in the background.
 
 On startup the daemon runs environment checks before syncing:
 - Claude Code skills directory exists at `~/.claude/skills/` (required)
-- Gemini CLI is available on PATH (best-effort; warns if not found)
+- Gemini CLI (`gemini`) is available on PATH (required)
 - Antigravity destination directory presence (warns if missing; will be created)
 
-If the Claude skills directory is missing, the daemon logs a message and exits gracefully. Create `~/.claude/skills/` and restart.
+If the Claude skills directory or Gemini CLI is missing, the daemon logs a message and exits gracefully.
+
+Tip for launchd environments: if you installed Gemini CLI via nvm/asdf, ensure PATH is exported in your LaunchAgent or create a wrapper at `/usr/local/bin/gemini` that execs your CLI binary.
 
 ### View Logs
 

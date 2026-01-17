@@ -94,7 +94,7 @@ mod tests {
     }
 
     #[test]
-fn test_generate_toml_with_description() {
+    fn test_generate_toml_with_description() {
         let toml = generate_toml(Some("My skill".to_string()), "Test content");
 
         assert!(toml.contains("description = \"My skill\""));
@@ -103,7 +103,7 @@ fn test_generate_toml_with_description() {
     }
 
     #[test]
-fn test_generate_toml_without_description() {
+    fn test_generate_toml_without_description() {
         let toml = generate_toml(None, "Test content");
 
         assert!(toml.contains("description = \"Custom skill\""));

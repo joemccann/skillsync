@@ -5,10 +5,10 @@
 
 pub mod config;
 pub mod destination;
+pub mod preflight;
 pub mod sync;
 pub mod transform;
 pub mod watcher;
-pub mod preflight;
 
 pub use config::Config;
 pub use destination::{Destination, DestinationType};
@@ -49,7 +49,7 @@ pub fn run() -> Result<()> {
     // Load configuration
     let config = Config::new()?;
 
-// Set up logging
+    // Set up logging
     let _guard = setup_logging(&config.log_dir)?;
 
     tracing::info!("skillsync daemon starting");
@@ -58,7 +58,13 @@ pub fn run() -> Result<()> {
     let outcome = preflight::check_all(&config)?;
     if !outcome.claude_ok {
         // Without a source to watch, there's nothing to do. Exit gracefully.
-        tracing::warn!("Exiting: Claude skills directory missing. Create ~/.claude/skills and restart.");
+        tracing::warn!(
+            "Exiting: Claude skills directory missing. Create ~/.claude/skills and restart."
+        );
+        return Ok(());
+    }
+    if !outcome.gemini_cli_ok {
+        tracing::warn!("Exiting: Gemini CLI not found on PATH. Install and expose 'gemini' before running SkillSync.");
         return Ok(());
     }
 
