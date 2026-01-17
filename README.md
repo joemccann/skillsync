@@ -171,6 +171,76 @@ sudo rm /usr/local/bin/skillsync
 | `/usr/local/bin/skillsync` | Installed binary |
 | `~/Library/LaunchAgents/com.skillsync.plist` | launchd config |
 
+## Contributing
+
+Contributions are welcome! Here's how you can help:
+
+### Reporting Bugs
+
+If you find a bug, please [open an issue](https://github.com/joemccann/skillsync/issues/new) with:
+- A clear, descriptive title
+- Steps to reproduce the issue
+- Expected vs actual behavior
+- Your environment:
+  - macOS version
+  - Node.js installation method (Homebrew, nvm, etc.)
+  - Gemini CLI version (`gemini --version`)
+  - Relevant log snippets from `~/skillsync/logs/skillsync.log`
+
+### Requesting Features
+
+For feature requests, [open an issue](https://github.com/joemccann/skillsync/issues/new) with:
+- A clear description of the feature
+- Use case and motivation
+- Any implementation ideas (optional)
+
+### Submitting Pull Requests
+
+1. **Fork the repository** and create your branch from `main`:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes** following the existing code style:
+   - Run `cargo fmt` to format code
+   - Run `cargo clippy` to catch common issues
+   - Add tests for new functionality
+
+3. **Test your changes**:
+   ```bash
+   cargo test
+   ./scripts/test_sync.sh
+   ```
+
+4. **Commit your changes** with a descriptive message:
+   ```bash
+   git commit -m "Add feature: your feature description"
+   ```
+
+5. **Push to your fork** and [open a pull request](https://github.com/joemccann/skillsync/compare):
+   - Describe what changed and why
+   - Reference any related issues
+   - Include test results
+
+### Development Setup
+
+```bash
+# Clone your fork
+git clone https://github.com/YOUR-USERNAME/skillsync.git
+cd skillsync
+
+# Build and test
+cargo build
+cargo test
+
+# Install locally for testing
+./scripts/install.sh
+```
+
+### Code of Conduct
+
+Be respectful and constructive. This project follows standard open source community guidelines.
+
 ## License
 
 MIT
