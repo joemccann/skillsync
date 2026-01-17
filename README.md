@@ -1,6 +1,6 @@
 # SkillSync
 
-A macOS daemon that mirrors Claude skills to Gemini in real-time.
+Turn skills into everywhere‑available commands: a lightning‑fast macOS daemon mirroring Claude Code to Gemini and Antigravity.
 
 Claude is the source of truth. Any change in `~/.claude/skills/` is automatically synced to three destinations with tool-specific transformations:
 - `~/.gemini/skills/` (Claude-style, preserves YAML frontmatter)

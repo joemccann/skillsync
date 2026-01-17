@@ -2,7 +2,7 @@
 name = "skillsync"
 version = "0.1.0"
 edition = "2021"
-description = "Sync Claude skills to Gemini in real-time"
+description = "Turn skills into everywhere‑available commands: a lightning‑fast macOS daemon mirroring Claude Code to Gemini and Antigravity."
 authors = ["Joe McCann"]
 license = "MIT"
 
