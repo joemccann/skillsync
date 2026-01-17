@@ -71,8 +71,8 @@ fn test_sync_file_gemini_toml() {
     assert!(toml_file.exists());
 
     let content = fs::read_to_string(&toml_file).unwrap();
-    assert!(content.contains("description = \"My test skill\""));
-    assert!(content.contains("prompt = \"\"\""));
+assert!(content.contains("description = \"My test skill\""));
+    assert!(content.contains("prompt = '''"));
     assert!(content.contains("# Test"));
     assert!(content.contains("Content here"));
     // YAML frontmatter should be stripped

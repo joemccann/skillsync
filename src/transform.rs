@@ -48,11 +48,14 @@ pub fn parse_frontmatter(content: &str) -> (FrontmatterData, String) {
 }
 
 /// Generate TOML format for Gemini CLI
+/// - Escapes description for TOML basic strings
+/// - Uses TOML literal multiline string (''') for prompt to avoid escaping
 pub fn generate_toml(description: Option<String>, content: &str) -> String {
     let desc = description.unwrap_or_else(|| "Custom skill".to_string());
+    let desc_escaped = desc.replace('\\', "\\\\").replace('"', "\\\"");
     format!(
-        "description = \"{}\"\nprompt = \"\"\"\n{}\n\"\"\"\n",
-        desc, content
+        "description = \"{}\"\nprompt = '''\n{}\n'''\n",
+        desc_escaped, content
     )
 }
 
@@ -91,19 +94,20 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_toml_with_description() {
+fn test_generate_toml_with_description() {
         let toml = generate_toml(Some("My skill".to_string()), "Test content");
 
         assert!(toml.contains("description = \"My skill\""));
-        assert!(toml.contains("prompt = \"\"\""));
+        assert!(toml.contains("prompt = '''"));
         assert!(toml.contains("Test content"));
     }
 
     #[test]
-    fn test_generate_toml_without_description() {
+fn test_generate_toml_without_description() {
         let toml = generate_toml(None, "Test content");
 
         assert!(toml.contains("description = \"Custom skill\""));
+        assert!(toml.contains("prompt = '''"));
         assert!(toml.contains("Test content"));
     }
 }
