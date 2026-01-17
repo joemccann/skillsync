@@ -1,11 +1,11 @@
 <p align="center">
-  <img src=".github/logo.jpeg" alt="SkillSync Logo" width="400">
+  <img src=".github/logo.png" alt="SkillSync Logo" width="100%">
 </p>
 
 <h1 align="center">SkillSync</h1>
 
 <p align="center">
-  Turn skills into everywhere‑available commands: a lightning‑fast macOS daemon mirroring Claude Code to Gemini and Antigravity.
+  Turn skills into everywhere‑available commands: a <b>lightning‑fast macOS daemon</b> mirroring Claude Code to Gemini and Antigravity.
 </p>
 
 Claude is the source of truth. Any change in `~/.claude/skills/` is automatically synced to three destinations with tool-specific transformations:
