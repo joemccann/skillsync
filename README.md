@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".github/logo.png" alt="SkillSync Logo" width="100%">
+  <img src=".github/logo.svg" alt="SkillSync Logo" width="100%">
 </p>
 
 <h1 align="center">SkillSync</h1>
