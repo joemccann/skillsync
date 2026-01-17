@@ -68,7 +68,8 @@ The codebase is organized into focused modules:
 - `src/transform.rs` - Content transformations (YAML/TOML)
 - `src/sync.rs` - Core sync logic and SkillSync struct
 - `src/watcher.rs` - File watching and event handling
-- `tests/` - Integration and unit tests
+- `src/preflight.rs` - Environment checks (Claude, Gemini CLI, Antigravity)
+- `tests/` - Integration and validation tests (TOML parsing, YAML preservation)
 
 ### Core Components
 
@@ -86,7 +87,7 @@ The codebase is organized into focused modules:
 **Content Transformations**:
 - YAML frontmatter parsing: Extracts `description` field from frontmatter
 - YAML stripping: Removes content between `---` markers for TOML destinations
-- TOML generation: Wraps content in `description` and `prompt` fields
+- TOML generation: Wraps content in `description` (escaped) and `prompt` fields; uses TOML literal multiline strings (`'''`) for prompt to avoid escaping content
 - Path mapping: `ui-skills/SKILL.md` → `ui-skills.toml` for Gemini CLI
 
 **Event Loop** - Uses `notify-debouncer-mini` to:
@@ -99,6 +100,13 @@ The codebase is organized into focused modules:
 - Structured logging to `~/skillsync/logs/skillsync.log`
 - Non-blocking file appender
 - INFO level by default
+
+### Preflight
+
+On startup the daemon runs environment checks:
+- Requires Claude Code skills directory at `~/.claude/skills/` (exits if missing)
+- Requires Gemini CLI binary `gemini` on PATH (exits if missing)
+- Warns if Antigravity destination directory is missing (it will be created)
 
 ### Key Behaviors
 
@@ -137,7 +145,9 @@ Key dependencies and their purpose:
 - `home` - Cross-platform home directory detection
 - `anyhow` - Error handling with context
 - `ctrlc` - Signal handling for graceful shutdown
+- `which` - Locate external binaries (Gemini CLI) on PATH
 - `tempfile` (dev) - Temporary directories for testing
+- `toml` (dev) - Parse generated TOML in tests
 
 ## Development Notes
 
@@ -151,4 +161,4 @@ Key dependencies and their purpose:
   - Orphan cleanup for both destination types
 - When making changes, use `./scripts/install.sh` to rebuild and restart the service
 - The daemon must run continuously as a background service, not as a one-time CLI tool
-- Use `./test_sync.sh` for quick validation of sync behavior without installing
+- Use `./scripts/test_sync.sh` for quick validation of sync behavior without installing
