@@ -4,9 +4,11 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Project Overview
 
-SkillSync is a macOS daemon written in Rust that mirrors Claude skills to Gemini in real-time using FSEvents. It watches `~/.claude/skills/` as the source of truth and syncs changes to three destinations with tool-specific transformations:
+SkillSync is a macOS daemon written in Rust that mirrors Claude skills to Gemini, Codex, and Cursor in real-time using FSEvents. It watches `~/.claude/skills/` as the source of truth and syncs changes to five destinations with tool-specific transformations:
 - `~/.gemini/skills/` - Claude-style (preserves YAML frontmatter)
 - `~/.gemini/antigravity/skills/` - Claude-style (preserves YAML frontmatter)
+- `~/.codex/skills/` - Claude-style (preserves YAML frontmatter)
+- `~/.cursor/skills/` - Claude-style (preserves YAML frontmatter)
 - `~/.gemini/commands/` - Gemini CLI TOML format (strips YAML, wraps in TOML)
 
 ## Development Commands
@@ -77,7 +79,8 @@ On startup the daemon runs environment checks:
 - Requires Claude Code skills directory at `~/.claude/skills/` (exits if missing)
 - Requires Gemini CLI binary `gemini` on PATH or in common installation locations (exits if missing)
   - Searches: PATH, Homebrew (Apple Silicon + Intel), nvm, fnm, Volta, nodenv, asdf, npm global
-- Warns if Antigravity destination directory is missing (it will be created)
+- Checks for Codex CLI binary `codex` on PATH or in common installation locations (warns if missing, continues)
+- Warns if Antigravity, Codex, or Cursor destination directories are missing (they will be created)
 
 **Node.js Version Manager Support:**
 The preflight check and install script support all major Node.js installation methods on macOS:
@@ -146,6 +149,8 @@ The daemon runs as a user-level LaunchAgent (`com.skillsync.plist`) with:
 - **Destinations (synced)**:
   - `~/.gemini/skills/` (ClaudeStyle)
   - `~/.gemini/antigravity/skills/` (ClaudeStyle)
+  - `~/.codex/skills/` (ClaudeStyle)
+  - `~/.cursor/skills/` (ClaudeStyle)
   - `~/.gemini/commands/` (GeminiToml)
 - **Logs**: `~/skillsync/logs/skillsync.log`
 - **launchd config**: `~/Library/LaunchAgents/com.skillsync.plist`
@@ -167,7 +172,7 @@ Key dependencies and their purpose:
 
 - This is a macOS-only daemon (uses FSEvents)
 - The project uses aggressive release optimizations (`opt-level = 3`, `lto = true`, `strip = true`)
-- Comprehensive test suite with 13 unit and integration tests covering:
+- Comprehensive test suite with 14 unit and integration tests covering:
   - YAML frontmatter parsing and stripping
   - TOML generation
   - ClaudeStyle and GeminiToml sync
