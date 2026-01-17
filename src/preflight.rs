@@ -11,11 +11,16 @@ pub struct PreflightOutcome {
     pub gemini_cli_ok: bool,
     pub antigravity_ok: bool,
     pub codex_cli_ok: bool,
+    pub cursor_ok: bool,
 }
 
 impl PreflightOutcome {
     pub fn all_good(&self) -> bool {
-        self.claude_ok && self.gemini_cli_ok && self.antigravity_ok && self.codex_cli_ok
+        self.claude_ok
+            && self.gemini_cli_ok
+            && self.antigravity_ok
+            && self.codex_cli_ok
+            && self.cursor_ok
     }
 }
 
@@ -25,6 +30,7 @@ pub fn check_all(cfg: &Config) -> Result<PreflightOutcome> {
         gemini_cli_ok: false,
         antigravity_ok: false,
         codex_cli_ok: false,
+        cursor_ok: false,
     };
 
     // 1) Claude Code skills source must exist
@@ -220,6 +226,22 @@ pub fn check_all(cfg: &Config) -> Result<PreflightOutcome> {
         info!(path = %codex_dir.display(), "Codex skills directory detected");
     } else {
         warn!(path = %codex_dir.display(), "Codex skills directory not found (will be created)");
+    }
+
+    // 6) Cursor directory presence (informational)
+    let cursor_dir = cfg
+        .destinations
+        .iter()
+        .find(|d| d.base_path.to_string_lossy().contains(".cursor/skills"))
+        .map(|d| d.base_path.as_path())
+        .unwrap_or(Path::new("/nonexistent"));
+
+    if cursor_dir.exists() {
+        info!(path = %cursor_dir.display(), "Cursor skills directory detected");
+        out.cursor_ok = true;
+    } else {
+        warn!(path = %cursor_dir.display(), "Cursor skills directory not found (will be created)");
+        out.cursor_ok = true; // treat as OK since we can create it
     }
 
     Ok(out)

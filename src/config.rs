@@ -33,6 +33,10 @@ impl Config {
                 DestinationType::ClaudeStyle,
             ),
             Destination::new(
+                home.join(".cursor").join("skills"),
+                DestinationType::ClaudeStyle,
+            ),
+            Destination::new(
                 home.join(".gemini").join("commands"),
                 DestinationType::GeminiToml,
             ),

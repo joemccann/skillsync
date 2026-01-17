@@ -5,13 +5,14 @@
 <h1 align="center">SkillSync</h1>
 
 <p align="center">
-  Turn skills into everywhere‑available commands: a <b>lightning‑fast macOS daemon</b> mirroring Claude Code to Gemini, Antigravity, and Codex.
+  Turn skills into everywhere‑available commands: a <b>lightning‑fast macOS daemon</b> mirroring Claude Code to Gemini, Antigravity, Codex, and Cursor.
 </p>
 
 Claude is the source of truth. Any change in `~/.claude/skills/` is automatically synced to three destinations with tool-specific transformations:
 - `~/.gemini/skills/` (Claude-style, preserves YAML frontmatter)
 - `~/.gemini/antigravity/skills/` (Claude-style, preserves YAML frontmatter)
 - `~/.codex/skills/` (Claude-style, preserves YAML frontmatter)
+- `~/.cursor/skills/` (Claude-style, preserves YAML frontmatter)
 - `~/.gemini/commands/` (Gemini CLI TOML; strips YAML, wraps prompt)
 
 ## Features
@@ -81,6 +82,7 @@ On startup the daemon runs environment checks before syncing:
 - Claude Code skills directory exists at `~/.claude/skills/` (required)
 - Gemini CLI (`gemini`) is available on PATH or in common installation locations (required)
 - Codex CLI (`codex`) is available on PATH or in common installation locations (optional; warns if missing)
+- Cursor skills directory (`~/.cursor/skills/`) presence (optional; warns if missing; will be created)
 - Antigravity destination directory presence (warns if missing; will be created)
 
 The preflight check searches for `gemini` in multiple locations:
@@ -175,6 +177,7 @@ sudo rm /usr/local/bin/skillsync
 | `~/.gemini/skills/` | Destination (Claude-style) |
 | `~/.gemini/antigravity/skills/` | Destination (Claude-style) |
 | `~/.codex/skills/` | Destination (Claude-style) |
+| `~/.cursor/skills/` | Destination (Claude-style) |
 | `~/.gemini/commands/` | Destination (Gemini CLI TOML) |
 | `~/skillsync/logs/skillsync.log` | Application logs |
 | `/usr/local/bin/skillsync` | Installed binary |
